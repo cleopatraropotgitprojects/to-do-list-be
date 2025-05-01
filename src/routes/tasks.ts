@@ -4,7 +4,6 @@ import { PrismaClient } from "@prisma/client";
 const router = Router();
 const prisma = new PrismaClient();
 
-// Create a task
 // @ts-ignore
 router.post("/", async (req: Request, res: Response) => {
     try {
@@ -12,6 +11,28 @@ router.post("/", async (req: Request, res: Response) => {
 
         if (!text || !date) {
             return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        if (isRoutine && text.includes("\n")) {
+            const lines = text
+                .split("\n")
+                .map((line: any) => line.trim())
+                .filter((line: any) => line.length > 0);
+
+            const createdTasks = await Promise.all(
+                lines.map((line: any) =>
+                    prisma.task.create({
+                        data: {
+                            text: line,
+                            isRoutine: true,
+                            done: false,
+                            date,
+                        },
+                    })
+                )
+            );
+
+            return res.status(201).json(createdTasks);
         }
 
         const task = await prisma.task.create({
@@ -25,7 +46,6 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
-// Update a task
 router.put("/:id", async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -43,7 +63,6 @@ router.put("/:id", async (req: Request, res: Response) => {
     }
 });
 
-// Delete a task
 router.delete("/:id", async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
