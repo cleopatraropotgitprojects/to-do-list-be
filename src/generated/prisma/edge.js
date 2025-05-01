@@ -143,7 +143,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
@@ -153,12 +153,11 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": null
+        "value": "postgresql://todo_list_db_44co_user:wYUDIuY0L9zB44O0pbIhIAcsL6ozGX0Q@dpg-d09ovnmuk2gs73dph6h0-a.frankfurt-postgres.render.com/todo_list_db_44co"
       }
     }
   },
