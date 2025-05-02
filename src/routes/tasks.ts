@@ -21,6 +21,21 @@ router.get("/", async (req: Request, res: Response) => {
       res.status(500).json({ error: "Failed to fetch tasks" });
     }
 });
+router.get("/routine", async (_req: Request, res: Response) => {
+    try {
+      const tasks = await prisma.task.findMany({
+        where: {
+          isRoutine: true,
+        },
+        orderBy: { date: "asc" },
+      });
+  
+      res.json(tasks);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to fetch routine tasks" });
+    }
+});
 // @ts-ignore
 router.post("/routine", async (req: Request, res: Response) => {
     try {
