@@ -78,4 +78,31 @@ router.delete("/:id", async (req: Request, res: Response) => {
     }
 });
 
+// @ts-ignore
+router.patch("/:id/toggle", async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        
+        // First get the current task to know its current done status
+        const currentTask = await prisma.task.findUnique({
+            where: { id }
+        });
+
+        if (!currentTask) {
+            return res.status(404).json({ error: "Task not found" });
+        }
+
+        // Toggle the done status
+        const updated = await prisma.task.update({
+            where: { id },
+            data: { done: !currentTask.done }
+        });
+
+        res.json(updated);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to toggle task status" });
+    }
+});
+
 export default router;
