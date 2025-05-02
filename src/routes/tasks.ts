@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { addDays, format, parseISO } from "date-fns";
+
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -122,5 +124,95 @@ router.patch("/:id/toggle", async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to toggle task status" });
     }
 });
+
+// @ts-ignore
+router.post("/routine", async (req: Request, res: Response) => {
+  try {
+    const { text, startDate, days } = req.body;
+
+    if (!text || !startDate || !days) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const tasks = [];
+
+    for (let i = 0; i < days; i++) {
+      const date = format(addDays(parseISO(startDate), i), "yyyy-MM-dd");
+
+      tasks.push(
+        prisma.task.create({
+          data: {
+            text,
+            isRoutine: true,
+            done: false,
+            date,
+          },
+        })
+      );
+    }
+
+    const created = await Promise.all(tasks);
+    res.status(201).json(created);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create routine" });
+  }
+});
+
+// @ts-ignore
+router.delete("/routine", async (req: Request, res: Response) => {
+  try {
+    const { text, fromDate } = req.query;
+
+    if (!text || !fromDate) {
+      return res.status(400).json({ error: "Missing text or fromDate" });
+    }
+
+    await prisma.task.deleteMany({
+      where: {
+        isRoutine: true,
+        text: String(text),
+        date: {
+          gte: String(fromDate),
+        },
+      },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete routine tasks" });
+  }
+});
+
+// @ts-ignore
+router.put("/routine", async (req: Request, res: Response) => {
+  try {
+    const { oldText, newText, fromDate } = req.body;
+
+    if (!oldText || !newText || !fromDate) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const updated = await prisma.task.updateMany({
+      where: {
+        isRoutine: true,
+        text: oldText,
+        date: {
+          gte: String(fromDate),
+        },
+      },
+      data: {
+        text: newText,
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update routine tasks" });
+  }
+});
+
 
 export default router;
