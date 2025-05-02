@@ -45,21 +45,28 @@ router.post("/routine", async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Missing required fields" });
       }
   
+      const lines = text
+        .split("\n")
+        .map((line: any) => line.trim())
+        .filter((line: any) => line.length > 0);
+  
       const tasks = [];
   
       for (let i = 0; i < days; i++) {
         const date = format(addDays(parseISO(startDate), i), "yyyy-MM-dd");
   
-        tasks.push(
-          prisma.task.create({
-            data: {
-              text,
-              isRoutine: true,
-              done: false,
-              date,
-            },
-          })
-        );
+        for (const line of lines) {
+          tasks.push(
+            prisma.task.create({
+              data: {
+                text: line,
+                isRoutine: true,
+                done: false,
+                date,
+              },
+            })
+          );
+        }
       }
   
       const created = await Promise.all(tasks);
