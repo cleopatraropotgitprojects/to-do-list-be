@@ -4,6 +4,21 @@ import { PrismaClient } from "@prisma/client";
 const router = Router();
 const prisma = new PrismaClient();
 
+// Get all tasks
+router.get("/", async (_req: Request, res: Response) => {
+    try {
+        const tasks = await prisma.task.findMany({
+            orderBy: {
+                date: 'asc'
+            }
+        });
+        res.json(tasks);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch tasks" });
+    }
+});
+
 // @ts-ignore
 router.post("/", async (req: Request, res: Response) => {
     try {
