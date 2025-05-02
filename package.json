@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
+    "generate": "prisma generate",
     "build": "tsc",
-    "start": "npx prisma generate && npm run build && node dist/index.js",
-    "prisma:generate": "prisma generate"
+    "start": "npm run generate && npm run build && node dist/index.js",
+    "dev": "ts-node-dev src/index.ts"
   },
   "keywords": [],
   "author": "",
