@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 // 1. REGISTER
 //@ts-ignore
 authRouter.post("/register", async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   console.log("[REGISTER] Incoming:", req.body);
 
