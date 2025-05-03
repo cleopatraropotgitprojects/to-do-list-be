@@ -25,14 +25,14 @@ authRouter.post("/register", async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ message: "Email and password required" });
 
-  const existingUser = await prisma.User.findUnique({ where: { email } });
+  const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser)
     return res.status(409).json({ message: "Email already registered" });
 
   const passwordHash = await bcrypt.hash(password, 10);
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  await prisma.User.create({
+  await prisma.user.create({
     data: {
       email,
       passwordHash,
@@ -56,13 +56,13 @@ authRouter.post("/register", async (req, res) => {
 authRouter.post("/verify", async (req, res) => {
   const { email, code } = req.body;
 
-  const user = await prisma.User.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return res.status(404).json({ message: "User not found" });
 
   if (user.verificationCode !== code)
     return res.status(400).json({ message: "Invalid verification code" });
 
-  await prisma.User.update({
+  await prisma.user.update({
     where: { email },
     data: {
       isVerified: true,
@@ -78,7 +78,7 @@ authRouter.post("/verify", async (req, res) => {
 authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await prisma.User.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return res.status(404).json({ message: "User not found" });
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
