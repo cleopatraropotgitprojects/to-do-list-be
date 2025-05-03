@@ -20,3 +20,12 @@ model Task {
   done      Boolean
   date      String
 }
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String
+  verificationCode  String
+  isVerified        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+}
