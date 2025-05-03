@@ -39,41 +39,42 @@ router.get("/routine", async (_req: Request, res: Response) => {
 // @ts-ignore
 router.post("/routine", async (req: Request, res: Response) => {
     try {
-      const { text, startDate, days } = req.body;
-  
-      if (!text || !startDate || !days) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
-  
-      const lines = text
-        .split("\n")
-        .map((line: any) => line.trim())
-        .filter((line: any) => line.length > 0);
-  
-      const tasks = [];
-  
-      for (let i = 0; i < days; i++) {
-        const date = format(addDays(parseISO(startDate), i), "yyyy-MM-dd");
-  
-        for (const line of lines) {
-          tasks.push(
-            prisma.task.create({
-              data: {
-                text: line,
-                isRoutine: true,
-                done: false,
-                date,
-              },
-            })
-          );
+        const { text, startDate, days, userId } = req.body;
+
+        if (!text || !startDate || !days || !userId) {
+            return res.status(400).json({ error: "Missing required fields" });
         }
-      }
-  
-      const created = await Promise.all(tasks);
-      res.status(201).json(created);
+
+        const lines = text
+            .split("\n")
+            .map((line: any) => line.trim())
+            .filter((line: any) => line.length > 0);
+
+        const tasks = [];
+
+        for (let i = 0; i < days; i++) {
+            const date = format(addDays(parseISO(startDate), i), "yyyy-MM-dd");
+
+            for (const line of lines) {
+                tasks.push(
+                    prisma.task.create({
+                        data: {
+                            text: line,
+                            isRoutine: true,
+                            done: false,
+                            date,
+                            userId, // ✅ adăugat
+                        },
+                    })
+                );
+            }
+        }
+
+        const created = await Promise.all(tasks);
+        res.status(201).json(created);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Failed to create routine" });
+        console.error(error);
+        res.status(500).json({ error: "Failed to create routine" });
     }
 });
 // @ts-ignore
@@ -134,7 +135,7 @@ router.put("/routine", async (req: Request, res: Response) => {
 // @ts-ignore
 router.post("/", async (req: Request, res: Response) => {
     try {
-        const { text, isRoutine, done, date } = req.body;
+        const { text, isRoutine, done, date, userId } = req.body;
 
         if (!text || !date) {
             return res.status(400).json({ error: "Missing required fields" });
@@ -154,6 +155,7 @@ router.post("/", async (req: Request, res: Response) => {
                             isRoutine: true,
                             done: false,
                             date,
+                            userId,
                         },
                     })
                 )
@@ -163,7 +165,7 @@ router.post("/", async (req: Request, res: Response) => {
         }
 
         const task = await prisma.task.create({
-            data: { text, isRoutine, done, date },
+            data: { text, isRoutine, done, date, userId },
         });
 
         res.status(201).json(task);
