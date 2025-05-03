@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import type { Request, Response } from "express";
 
 const prisma = new PrismaClient();
 export const authRouter = Router();
@@ -17,7 +18,8 @@ const transporter = nodemailer.createTransport({
 });
 
 // ✅ DEBUG endpoint - trimite un cod de test către adresa ta
-authRouter.post("/send-test-code", async (req, res) => {
+//@ts-ignore
+authRouter.post("/send-test-code", async (_req: Request, res: Response) => {
   const testCode = Math.floor(100000 + Math.random() * 900000).toString();
   const testEmail = "cleopatrar58@gmail.com";
 
@@ -39,7 +41,8 @@ authRouter.post("/send-test-code", async (req, res) => {
 });
 
 // 1. REGISTER
-authRouter.post("/register", async (req, res) => {
+//@ts-ignore
+authRouter.post("/register", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   console.log("[REGISTER] Incoming:", req.body);
@@ -81,7 +84,8 @@ authRouter.post("/register", async (req, res) => {
 });
 
 // 2. VERIFY
-authRouter.post("/verify", async (req, res) => {
+//@ts-ignore
+authRouter.post("/verify", async (req: Request, res: Response) => {
   const { email, code } = req.body;
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -102,7 +106,8 @@ authRouter.post("/verify", async (req, res) => {
 });
 
 // 3. LOGIN
-authRouter.post("/login", async (req, res) => {
+//@ts-ignore
+authRouter.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
