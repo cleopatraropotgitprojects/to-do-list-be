@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 // 1. REGISTER
 //@ts-ignore
 authRouter.post("/register", async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   console.log("[REGISTER] Incoming:", req.body);
 
@@ -42,7 +42,7 @@ authRouter.post("/register", async (req: Request, res: Response) => {
       passwordHash,
       verificationCode,
       isVerified: false,
-      name
+      ...(name && { name })
     },
   });
 
@@ -107,7 +107,7 @@ authRouter.post("/verify", async (req: Request, res: Response) => {
 // 3. LOGIN
 //@ts-ignore
 authRouter.post("/login", async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   try {
     if (!email || !password) {
