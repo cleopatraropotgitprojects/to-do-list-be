@@ -1,4 +1,3 @@
-// src/routes/auth.ts
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -18,7 +17,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // 1. REGISTER
-//@ts-ignore
+// @ts-ignore
 authRouter.post("/register", async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
 
@@ -36,54 +35,48 @@ authRouter.post("/register", async (req: Request, res: Response) => {
 
   console.log("[REGISTER] Sending code:", verificationCode, "to:", email);
 
-  await prisma.user.create({
+  // ✅ Cream userul si salvam rezultatul in variabila
+  const newUser = await prisma.user.create({
     data: {
       email,
       passwordHash,
       verificationCode,
       isVerified: false,
-      ...(name && { name })
+      ...(name && { name }),
     },
   });
 
   try {
     await transporter.sendMail({
-        from: `"ToDo App" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "Welcome to ToDo App – Your Verification Code",
-        text: `
-      Hi there!
-      
-      Welcome to ToDo App 🎉
-      
-      Your verification code is: ${verificationCode}
-      
-      Please enter this code in the app to activate your account.
-      
-      Thanks,  
-      ToDo App Team
-        `,
-        html: `
-          <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
-            <p>Hi there!</p>
-            <p>Welcome to <strong>ToDo App</strong> 🎉</p>
-            <p style="font-size: 18px; margin: 20px 0;"><strong>Your verification code is:</strong> <span style="font-size: 20px; color: #000;">${verificationCode}</span></p>
-            <p>Please enter this code in the app to activate your account.</p>
-            <br />
-            <p>Thanks,<br/>ToDo App Team</p>
-          </div>
-        `,
-      });
-        } catch (err) {
+      from: `"ToDo App" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Welcome to ToDo App – Your Verification Code",
+      text: `Hi there!\n\nWelcome to ToDo App 🎉\n\nYour verification code is: ${verificationCode}\n\nPlease enter this code in the app to activate your account.\n\nThanks,\nToDo App Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
+          <p>Hi there!</p>
+          <p>Welcome to <strong>ToDo App</strong> 🎉</p>
+          <p style="font-size: 18px; margin: 20px 0;"><strong>Your verification code is:</strong> <span style="font-size: 20px; color: #000;">${verificationCode}</span></p>
+          <p>Please enter this code in the app to activate your account.</p>
+          <br />
+          <p>Thanks,<br/>ToDo App Team</p>
+        </div>
+      `,
+    });
+  } catch (err) {
     console.error("[REGISTER] Failed to send email:", err);
     return res.status(500).json({ message: "Failed to send email." });
   }
 
-  return res.status(200).json({ message: "User created. Check your email." });
+  // ✅ Răspunsul corect cu userId inclus
+  return res.status(200).json({
+    message: "User created. Check your email.",
+    userId: newUser.id,
+  });
 });
 
 // 2. VERIFY
-//@ts-ignore
+// @ts-ignore
 authRouter.post("/verify", async (req: Request, res: Response) => {
   const { email, code } = req.body;
 
@@ -105,9 +98,9 @@ authRouter.post("/verify", async (req: Request, res: Response) => {
 });
 
 // 3. LOGIN
-//@ts-ignore
+// @ts-ignore
 authRouter.post("/login", async (req: Request, res: Response) => {
-  const { email, password, name } = req.body;
+  const { email, password } = req.body;
 
   try {
     if (!email || !password) {
