@@ -7,7 +7,10 @@
     "generate": "prisma generate",
     "build": "tsc",
     "start": "npm run generate && npm run build && node dist/index.js",
-    "dev": "ts-node-dev src/index.ts"
+    "dev": "ts-node-dev src/index.ts",
+    "postinstall": "prisma generate",
+    "prisma": "prisma",
+    "deploy": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
