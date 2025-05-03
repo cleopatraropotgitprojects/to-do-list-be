@@ -25,14 +25,14 @@ authRouter.post("/register", async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ message: "Email and password required" });
 
-  const existingUser = await prisma.user.findUnique({ where: { email } });
+  const existingUser = await prisma.User.findUnique({ where: { email } });
   if (existingUser)
     return res.status(409).json({ message: "Email already registered" });
 
   const passwordHash = await bcrypt.hash(password, 10);
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  await prisma.user.create({
+  await prisma.User.create({
     data: {
       email,
       passwordHash,
@@ -56,13 +56,13 @@ authRouter.post("/register", async (req, res) => {
 authRouter.post("/verify", async (req, res) => {
   const { email, code } = req.body;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.User.findUnique({ where: { email } });
   if (!user) return res.status(404).json({ message: "User not found" });
 
   if (user.verificationCode !== code)
     return res.status(400).json({ message: "Invalid verification code" });
 
-  await prisma.user.update({
+  await prisma.User.update({
     where: { email },
     data: {
       isVerified: true,
@@ -78,7 +78,7 @@ authRouter.post("/verify", async (req, res) => {
 authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.User.findUnique({ where: { email } });
   if (!user) return res.status(404).json({ message: "User not found" });
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
@@ -94,3 +94,21 @@ authRouter.post("/login", async (req, res) => {
 
   return res.status(200).json({ token });
 });
+
+//@ts-ignore
+authRouter.get("/test-email", async (req, res) => {
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, // trimite-ți ție
+        subject: "Test Email",
+        text: "Acesta este un email de test.",
+      });
+  
+      return res.status(200).json({ message: "Email sent successfully." });
+    } catch (error) {
+      console.error("EMAIL ERROR:", error);
+      return res.status(500).json({ message: "Failed to send email", error });
+    }
+  });
+  
