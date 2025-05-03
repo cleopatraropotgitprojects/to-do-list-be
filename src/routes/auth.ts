@@ -76,39 +76,45 @@ authRouter.post("/verify", async (req, res) => {
 // 3. LOGIN
 //@ts-ignore
 authRouter.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return res.status(404).json({ message: "User not found" });
-
-  const isMatch = await bcrypt.compare(password, user.passwordHash);
-  if (!isMatch)
-    return res.status(401).json({ message: "Invalid credentials" });
-
-  if (!user.isVerified)
-    return res.status(403).json({ message: "Account not verified" });
-
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
-    expiresIn: "7d",
-  });
-
-  return res.status(200).json({ token });
-});
-
-//@ts-ignore
-authRouter.get("/test-email", async (req, res) => {
+    const { email, password } = req.body;
+  
     try {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, // trimite-ți ție
-        subject: "Test Email",
-        text: "Acesta este un email de test.",
+      if (!email || !password) {
+        console.error("Missing email or password");
+        return res.status(400).json({ message: "Missing credentials" });
+      }
+  
+      const user = await prisma.user.findUnique({ where: { email } });
+  
+      if (!user) {
+        console.error("User not found:", email);
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const isMatch = await bcrypt.compare(password, user.passwordHash);
+      if (!isMatch) {
+        console.error("Password mismatch for:", email);
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+  
+      if (!user.isVerified) {
+        console.error("Account not verified:", email);
+        return res.status(403).json({ message: "Account not verified" });
+      }
+  
+      if (!process.env.JWT_SECRET) {
+        console.error("Missing JWT_SECRET in environment");
+        return res.status(500).json({ message: "Server config error" });
+      }
+  
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
       });
   
-      return res.status(200).json({ message: "Email sent successfully." });
-    } catch (error) {
-      console.error("EMAIL ERROR:", error);
-      return res.status(500).json({ message: "Failed to send email", error });
+      return res.status(200).json({ token });
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      return res.status(500).json({ message: "Internal Server Error", error: err });
     }
   });
-  
+    
