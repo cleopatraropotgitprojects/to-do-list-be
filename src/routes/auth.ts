@@ -17,29 +17,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ✅ DEBUG endpoint - trimite un cod de test către adresa ta
-//@ts-ignore
-authRouter.post("/send-test-code", async (_req: Request, res: Response) => {
-  const testCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const testEmail = "cleopatrar58@gmail.com";
-
-  console.log("[TEST] Sending test code:", testCode);
-
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: testEmail,
-      subject: "Test Code",
-      text: `Your code is: ${testCode}`,
-    });
-
-    return res.status(200).json({ message: "Test email sent." });
-  } catch (err) {
-    console.error("TEST EMAIL ERROR:", err);
-    return res.status(500).json({ message: "Failed to send test email." });
-  }
-});
-
 // 1. REGISTER
 //@ts-ignore
 authRouter.post("/register", async (req: Request, res: Response) => {
@@ -70,12 +47,33 @@ authRouter.post("/register", async (req: Request, res: Response) => {
 
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Verification Code",
-      text: `Your verification code is: ${verificationCode}`,
-    });
-  } catch (err) {
+        from: `"ToDo App" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Welcome to ToDo App – Your Verification Code",
+        text: `
+      Hi there!
+      
+      Welcome to ToDo App 🎉
+      
+      Your verification code is: ${verificationCode}
+      
+      Please enter this code in the app to activate your account.
+      
+      Thanks,  
+      ToDo App Team
+        `,
+        html: `
+          <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
+            <p>Hi there!</p>
+            <p>Welcome to <strong>ToDo App</strong> 🎉</p>
+            <p style="font-size: 18px; margin: 20px 0;"><strong>Your verification code is:</strong> <span style="font-size: 20px; color: #000;">${verificationCode}</span></p>
+            <p>Please enter this code in the app to activate your account.</p>
+            <br />
+            <p>Thanks,<br/>ToDo App Team</p>
+          </div>
+        `,
+      });
+        } catch (err) {
     console.error("[REGISTER] Failed to send email:", err);
     return res.status(500).json({ message: "Failed to send email." });
   }
