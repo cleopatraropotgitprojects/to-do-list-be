@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import {User} from "@prisma/client";
 
 export interface AuthenticatedRequest extends Request {
-    user?: {
-        userId: string;
-    };
+    user?: User;
 }
 
 export const authenticate = (
@@ -26,7 +25,8 @@ export const authenticate = (
             userId: string;
         };
 
-        (req as AuthenticatedRequest).user = { userId: decoded.userId };
+        (req as AuthenticatedRequest).user = { id: decoded.userId } as User;
+
         next();
     } catch (err) {
         console.error("[AUTH] Invalid token", err);
