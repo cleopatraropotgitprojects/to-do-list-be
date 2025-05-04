@@ -135,7 +135,11 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       expiresIn: "7d",
     });
 
-    return res.status(200).json({ token });
+    return res.status(200).json({
+      token,
+      userId: user.id,
+      name: user.name,
+    });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
     return res.status(500).json({ message: "Internal Server Error", error: err });
