@@ -30,7 +30,6 @@ authRouter.post("/register", async (req: Request, res: Response) => {
   if (existingUser)
     return res.status(409).json({ message: "Email already registered" });
 
-  const passwordHash = await bcrypt.hash(password, 10);
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
   console.log("[REGISTER] Sending code:", verificationCode, "to:", email);
@@ -39,7 +38,7 @@ authRouter.post("/register", async (req: Request, res: Response) => {
   const newUser = await prisma.user.create({
     data: {
       email,
-      passwordHash,
+      password,
       verificationCode,
       isVerified: false,
       ...(name && { name }),
@@ -115,9 +114,8 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      console.error("Password mismatch for:", email);
+    // @ts-ignore
+    if (password !== user.password) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 

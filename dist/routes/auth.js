@@ -37,13 +37,12 @@ exports.authRouter.post("/register", (req, res) => __awaiter(void 0, void 0, voi
     const existingUser = yield prisma.user.findUnique({ where: { email } });
     if (existingUser)
         return res.status(409).json({ message: "Email already registered" });
-    const passwordHash = yield bcrypt_1.default.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     console.log("[REGISTER] Sending code:", verificationCode, "to:", email);
     // ✅ Cream userul si salvam rezultatul in variabila
     const newUser = yield prisma.user.create({
         data: Object.assign({ email,
-            passwordHash,
+            password,
             verificationCode, isVerified: false }, (name && { name })),
     });
     try {
@@ -106,7 +105,7 @@ exports.authRouter.post("/login", (req, res) => __awaiter(void 0, void 0, void 0
             console.error("User not found:", email);
             return res.status(404).json({ message: "User not found" });
         }
-        const isMatch = yield bcrypt_1.default.compare(password, user.passwordHash);
+        const isMatch = yield bcrypt_1.default.compare(password, password);
         if (!isMatch) {
             console.error("Password mismatch for:", email);
             return res.status(401).json({ message: "Invalid credentials" });
