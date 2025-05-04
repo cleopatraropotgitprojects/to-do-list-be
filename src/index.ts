@@ -10,7 +10,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: ['http://localhost:3000', 'https://to-do-app-blush-nine.vercel.app/'],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
