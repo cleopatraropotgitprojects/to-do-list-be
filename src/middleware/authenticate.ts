@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import {User} from "@prisma/client";
+import { User } from "@prisma/client";
 
 export interface AuthenticatedRequest extends Request {
     user?: User;
