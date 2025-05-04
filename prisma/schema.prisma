@@ -19,11 +19,10 @@ model User {
 }
 
 model Task {
-  id        String  @id @default(cuid())
-  text      String
-  isRoutine Boolean
-  done      Boolean
-  date      String
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  id     String  @id @default(cuid())
+  text   String
+  done   Boolean
+  date   String
+  userId String
+  user   User    @relation(fields: [userId], references: [id])
 }
