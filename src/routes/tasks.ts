@@ -6,6 +6,29 @@ const router = Router();
 const prisma = new PrismaClient();
 
 // @ts-ignore
+router.get("/", authenticate, async (req: AuthenticatedRequest, res: Response) => {
+    const { date } = req.query;
+
+    if (!date) {
+        return res.status(400).json({ message: "Missing date parameter" });
+    }
+
+    try {
+        const tasks = await prisma.task.findMany({
+            where: {
+                userId: req.user!.userId,
+                date: String(date),
+            },
+        });
+
+        res.json(tasks);
+    } catch (error) {
+        console.error("[GET /tasks] Error:", error);
+        res.status(500).json({ error: "Failed to fetch tasks" });
+    }
+});
+
+// @ts-ignore
 router.post("/", authenticate, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { text, done, date } = req.body;
