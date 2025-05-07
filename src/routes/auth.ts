@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import type { Request, Response } from "express";
+import {authenticate} from "../middleware/authenticate";
 
 const prisma = new PrismaClient();
 export const authRouter = Router();
@@ -141,5 +141,40 @@ authRouter.post("/login", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("LOGIN ERROR:", err);
     return res.status(500).json({ message: "Internal Server Error", error: err });
+  }
+});
+
+
+// 3. CHANGE PASSWORD
+// @ts-ignore
+authRouter.post("/change-password", authenticate, async (req: any, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Both current and new password are required" });
+  }
+
+  const userId = req.user?.userId;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.password !== currentPassword) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: newPassword },
+    });
+
+    return res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Change password error:", err);
+    return res.status(500).json({ message: "Failed to update password" });
   }
 });
