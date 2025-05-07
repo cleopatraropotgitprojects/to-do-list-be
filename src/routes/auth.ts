@@ -154,7 +154,7 @@ authRouter.post("/change-password", authenticate, async (req: any, res: Response
     return res.status(400).json({ message: "Both current and new password are required" });
   }
 
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
 
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
