@@ -137,6 +137,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       token,
       userId: user.id,
       name: user.name,
+      email: user.email,
     });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
